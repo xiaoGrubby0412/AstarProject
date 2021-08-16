@@ -21,8 +21,8 @@ public class DemoControl : MonoBehaviour
     AstarHelperManager aStarHelper;
     public JpsHelperManager jpsHelper;
 
-    public const int mapWidth = 128;
-    public const int mapHeight = 128;
+    public const int mapWidth = 1400;
+    public const int mapHeight = 1400;
 
 
     // Use this for initialization
@@ -44,6 +44,10 @@ public class DemoControl : MonoBehaviour
         DebugGrid.Instance.width = DemoControl.mapWidth;
         DebugGrid.Instance.height = DemoControl.mapHeight;
         DebugGrid.Instance.blockData = AMapData.Instance.blockData;
+        DebugGrid.Instance.lstWidth = new List<Vector2>[DemoControl.mapWidth];
+        DebugGrid.Instance.lstHeight = new List<Vector2>[DemoControl.mapHeight];
+        DebugGrid.Instance.updateListHeight(0, DemoControl.mapWidth - 1);
+        DebugGrid.Instance.updateListWidth(0, DemoControl.mapHeight - 1);
 
         if (terrain.terrainData)
         {

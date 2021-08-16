@@ -50,6 +50,9 @@ public class DebugGrid : MonoBehaviour
 
     public int[][] blockData;
 
+    public List<Vector2>[] lstWidth;
+    public List<Vector2>[] lstHeight;
+
     /// <summary>
     /// offsetY,网格比地面要高出多少
     /// </summary>
@@ -100,7 +103,6 @@ public class DebugGrid : MonoBehaviour
     //在相机场景渲染完后被调用.
     void OnRenderObject()
     {
-
         DrawBlock();
         //DrawQuad(m_x, m_z, brushSize, Color.green);
         //DrawArea();
@@ -248,7 +250,7 @@ public class DebugGrid : MonoBehaviour
     {
         Dictionary<int, ANode> closeDic = DemoControl.instance.jpsHelper.closeDict;
 
-        foreach (KeyValuePair<int, ANode> pair in closeDic) 
+        foreach (KeyValuePair<int, ANode> pair in closeDic)
         {
             ANode nn = pair.Value;
             DrawANode(nn, Color.red);
@@ -303,19 +305,12 @@ public class DebugGrid : MonoBehaviour
 
         GL.End();
     }
-    /**
-     * 渲染网格
-     */
-    void DrawBlock()
+
+    public void updateListWidth(int from, int to)
     {
-        lineMat.SetPass(0);
-        GL.Begin(GL.LINES);
-        GL.Color(new Color(1, 0, 0, 1));
-
-        List<Vector2> list = new List<Vector2>();
-
-        for (int y = 0; y < this.height; y++)
+        for (int y = from; y <= to; y++)
         {
+            List<Vector2> list = new List<Vector2>();
             int lastX = -1;
             for (int x = 0; x < this.width; x++)
             {
@@ -332,10 +327,15 @@ public class DebugGrid : MonoBehaviour
                 }
             }
             list.Add(new Vector2(-1, -1)); //放入一行之内的 n 对 点
+            this.lstWidth[y] = list;
         }
+    }
 
-        for (int x = 0; x < this.width; x++)
+    public void updateListHeight(int from, int to)
+    {
+        for (int x = from; x <= to; x++)
         {
+            List<Vector2> list = new List<Vector2>();
             int lastY = -1;
             for (int y = 0; y < this.height; y++)
             {
@@ -352,20 +352,89 @@ public class DebugGrid : MonoBehaviour
                 }
             }
             list.Add(new Vector2(-1, -1));
+            this.lstHeight[x] = list;
         }
+    }
+    /**
+     * 渲染网格
+     */
+    void DrawBlock()
+    {
+        lineMat.SetPass(0);
+        GL.Begin(GL.LINES);
+        GL.Color(new Color(1, 0, 0, 1));
 
-        int idx = 0;
+        //List<Vector2> list = new List<Vector2>();
 
-        while (idx < list.Count)
+        //for (int y = 0; y < this.height; y++)
+        //{
+        //    int lastX = -1;
+        //    for (int x = 0; x < this.width; x++)
+        //    {
+        //        if (lastX == -1 && this.blockData[x][y] == 1)
+        //        {
+        //            lastX = x;
+        //            list.Add(new Vector2(x, y));
+        //        }
+
+        //        if (lastX != -1 && ((this.blockData[x][y] != this.blockData[lastX][y]) || x == this.width - 1))
+        //        {
+        //            list.Add(new Vector2(x - 1, y));
+        //            lastX = -1;
+        //        }
+        //    }
+        //    list.Add(new Vector2(-1, -1)); //放入一行之内的 n 对 点
+        //}
+
+        //for (int x = 0; x < this.width; x++)
+        //{
+        //    int lastY = -1;
+        //    for (int y = 0; y < this.height; y++)
+        //    {
+        //        if (lastY == -1 && this.blockData[x][y] == 1)
+        //        {
+        //            lastY = y;
+        //            list.Add(new Vector2(x, y));
+        //        }
+
+        //        if (lastY != -1 && ((this.blockData[x][y] != this.blockData[x][lastY]) || y == this.height - 1))
+        //        {
+        //            list.Add(new Vector2(x, y - 1));
+        //            lastY = -1;
+        //        }
+        //    }
+        //    list.Add(new Vector2(-1, -1));
+        //}
+
+        for (int i = 0; i < lstWidth.Length; i++)
         {
-            if (list[idx].x == -1 && list[idx].y == -1) { idx++; continue; }
-            GL.Color(GetCellColor((int)list[idx].x, (int)list[idx].y));
-            GL.Vertex3(list[idx].x, offsetY + 1, list[idx].y);
-            GL.Vertex3(list[idx + 1].x, offsetY + 1, list[idx + 1].y);
-            idx += 2;
+            List<Vector2> list = lstWidth[i];
+            int idx = 0;
+
+            while (idx < list.Count)
+            {
+                if (list[idx].x == -1 && list[idx].y == -1) { idx++; continue; }
+                GL.Color(GetCellColor((int)list[idx].x, (int)list[idx].y));
+                GL.Vertex3(list[idx].x, offsetY + 1, list[idx].y);
+                GL.Vertex3(list[idx + 1].x, offsetY + 1, list[idx + 1].y);
+                idx += 2;
+            }
         }
 
-        list.Clear();
+        for (int i = 0; i < lstHeight.Length; i++)
+        {
+            List<Vector2> list = lstHeight[i];
+            int idx = 0;
+
+            while (idx < list.Count)
+            {
+                if (list[idx].x == -1 && list[idx].y == -1) { idx++; continue; }
+                GL.Color(GetCellColor((int)list[idx].x, (int)list[idx].y));
+                GL.Vertex3(list[idx].x, offsetY + 1, list[idx].y);
+                GL.Vertex3(list[idx + 1].x, offsetY + 1, list[idx + 1].y);
+                idx += 2;
+            }
+        }
 
         GL.End();
     }
@@ -498,6 +567,8 @@ public class DebugGrid : MonoBehaviour
                     AMapData.Instance.SetBlock(tempx + 1, tempz);
                     AMapData.Instance.SetBlock(tempx + 1, tempz + 1);
                     AMapData.Instance.SetBlock(tempx, tempz + 1);
+                    updateListHeight(tempx, tempx + 1);
+                    updateListWidth(tempz, tempz + 1);
                 }
                 else if (curBrushSetType == BrushSetType.Gate)
                 {
