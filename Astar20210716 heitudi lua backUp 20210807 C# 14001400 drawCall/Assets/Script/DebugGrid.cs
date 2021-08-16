@@ -354,12 +354,15 @@ public class DebugGrid : MonoBehaviour
             list.Add(new Vector2(-1, -1));
         }
 
-        for (int i = 0; i < list.Count - 1; i += 2)
+        int idx = 0;
+
+        while (idx < list.Count)
         {
-            if (list[i].x == -1 && list[i].y == -1) i++;
-            GL.Color(GetCellColor((int)list[i].x, (int)list[i].y));
-            GL.Vertex3(list[i].x, offsetY + 1, list[i].y);
-            GL.Vertex3(list[i + 1].x, offsetY + 1, list[i + 1].y);
+            if (list[idx].x == -1 && list[idx].y == -1) { idx++; continue; }
+            GL.Color(GetCellColor((int)list[idx].x, (int)list[idx].y));
+            GL.Vertex3(list[idx].x, offsetY + 1, list[idx].y);
+            GL.Vertex3(list[idx + 1].x, offsetY + 1, list[idx + 1].y);
+            idx += 2;
         }
 
         list.Clear();
